@@ -1,0 +1,431 @@
+#include <Servo.h>
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <WebSocketsServer.h>
+
+const int inA = 3; //!rx pin
+const int inB = D1;
+const int inC = D2;
+const int inD = 1; //!tx pin
+const int enA = D6;
+const int enB = D7;
+const int lightCove = D0; //status/ accessory light
+
+Servo ser;
+
+int servo = 100; //servo centre, change it to 90 or as per servo arrangement
+int left = 0;
+int right = 0;
+bool lstate = 0;
+
+unsigned long lastPacket = 0;
+unsigned long ltime = 0;
+
+const char* AP_SSID = "V3 Kinetic";
+const char* AP_PASSWORD = "AgiI-BAS0007(404)";
+
+ESP8266WebServer server(80);
+WebSocketsServer webSocket = WebSocketsServer(81);
+
+const char webpage[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+<title>V3 Kinetic</title>
+<meta charset="utf-8">
+
+<script>
+let socket;
+let lastServo = "100"; /* set servo centre according to arrangement */
+let lastLeft = "0";
+let lastRight = "0";
+
+function initWebSocket() {
+  socket = new WebSocket(`ws://${window.location.hostname}:81/`);
+
+  socket.onopen = () => {
+    console.log('WebSocket Connection Established');
+    sendControlData(true);
+  };
+
+  socket.onerror = (error) => {
+    console.error('WebSocket Error:', error);
+  };
+
+  socket.onclose = () => {
+    console.log('WebSocket Connection Closed. Reconnecting in 1s...');
+    setTimeout(initWebSocket, 1000);
+  };
+}
+
+function updateSliderValue(sliderId, displayId) {
+  const slider = document.getElementById(sliderId);
+  const display = document.getElementById(displayId);
+  const syncInput = document.getElementById('sync');
+  const rightSlider = document.getElementById('rightMotorSlider');
+  const rightDisplay = document.getElementById('rightMotorVal');
+
+  if (slider && display) {
+    innerNo = Number(slider.value);
+    display.innerText = Math.abs(innerNo);
+  }
+
+  if (sliderId === 'leftMotorSlider' && syncInput.value === "1") {
+    rightSlider.value = slider.value;
+    rightDisplay.innerText = slider.value;
+  }
+
+  if (sliderId === 'servoSlider') {
+    navigator.vibrate(15);
+  } else {
+    navigator.vibrate(30);
+  }
+}
+
+function resetServo() {
+  const servoSlider = document.getElementById('servoSlider');
+  const servoDisplay = document.getElementById('servoVal');
+
+  if (servoSlider && servoDisplay) {
+    servoSlider.value = 100;
+    servoDisplay.innerText = 100;
+  }
+}
+
+function resetall() {
+  const servoSlider = document.getElementById('servoSlider');
+  const servoDisplay = document.getElementById('servoVal');
+  const leftSlider = document.getElementById('leftMotorSlider');
+  const leftDisplay = document.getElementById('leftMotorVal');
+  const rightSlider = document.getElementById('rightMotorSlider');
+  const rightDisplay = document.getElementById('rightMotorVal');
+
+  servoSlider.value = 100;
+  servoDisplay.innerText = 100;
+
+  leftSlider.value = 0;
+  leftDisplay.innerText = 0;
+
+  rightSlider.value = 0;
+  rightDisplay.innerText = 0;
+
+  enterController();
+  navigator.vibrate(60);
+}
+
+function sync() {
+  document.body.classList.add('system-shock');
+
+  setTimeout(() => {
+    const leftSlider = document.getElementById('leftMotorSlider');
+    const rightSlider = document.getElementById('rightMotorSlider');
+    const rightlabel = document.getElementById('right-d');
+    const leftlabel = document.getElementById('left-d');
+    const servolab = document.getElementById('servolab');
+    const servoVal = document.getElementById('servoVal');
+    const input = document.getElementById('sync');
+
+    if (input.value == 1) {
+      rightSlider.value = leftSlider.value;
+      rightSlider.style.display = 'none';
+      rightlabel.style.display = 'none';
+
+      document.getElementById('rightMotorVal').innerText =
+        document.getElementById('leftMotorVal').innerText;
+
+      leftlabel.innerText = 'wheels';
+      servolab.style.width = '10%';
+      servoVal.style.marginRight = '0';
+
+      navigator.vibrate(40);
+
+    } else if (input.value == 0) {
+      rightSlider.style.display = '';
+      rightlabel.style.display = 'flex';
+      leftlabel.innerText = 'wheel 1';
+      servolab.style.width = '100%';
+      servoVal.style.marginRight = '-35vw';
+
+      navigator.vibrate([40, 20, 40]);
+    }
+
+    void document.body.offsetWidth;
+    document.body.classList.remove('system-shock');
+  }, 0);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initWebSocket();
+});
+
+function sendControlData(force = false) {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    const servo = document.getElementById('servoSlider').value;
+    const left = document.getElementById('leftMotorSlider').value;
+    const right = document.getElementById('rightMotorSlider').value;
+
+    if (force || servo !== lastServo || left !== lastLeft || right !== lastRight) {
+      socket.send(`${servo},${left},${right}`);
+
+      lastServo = servo;
+      lastLeft = left;
+      lastRight = right;
+    }
+  }
+}
+
+async function enterController() {
+  await document.documentElement.requestFullscreen();
+  await screen.orientation.lock("landscape").catch(() => {});
+  window.dispatchEvent(new Event("resize"));
+}
+
+/* Keep-alive + latest control state: 50 times per second */
+setInterval(() => {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    const servo = document.getElementById('servoSlider').value;
+    const left = document.getElementById('leftMotorSlider').value;
+    const right = document.getElementById('rightMotorSlider').value;
+
+    socket.send(`${servo},${left},${right}`);
+
+    lastServo = servo;
+    lastLeft = left;
+    lastRight = right;
+  }
+}, 20);
+</script>
+
+<style>
+  body{
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    display: block;
+    background-color: rgb(0, 0, 0);
+    color: whitesmoke;
+    margin: 0;
+    padding: 0;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, "Liberation Mono", monospace;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  }
+  body.system-shock {
+    transform: scale(0.995);
+    opacity: 0;
+    transition: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    margin: 0;
+    width: var(--size);
+    height: var(--size);
+    background: rgba(0, 255, 234, 0.3);
+    box-shadow: inset 0px 0px 1vw rgba(255, 255, 255, 0.842);
+    border: rgba(255, 255, 255, 0.7) solid 0.2vw;
+    border-radius: 50%;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.5s;
+  }
+  input[type="range"]::-webkit-slider-thumb:active{
+    background-color: rgba(60, 60, 60, 0.8);
+    box-shadow: inset 0px 0px 1vw rgb(143, 143, 143);
+    transform: scale(1.1);
+  }
+  input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    border: rgba(255, 255, 255, 0.5) solid 0.2vw;
+    box-shadow: 0px 0px var(--size) rgb(84, 194, 238);
+    border-radius: 5vw;
+    background: rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+  }
+  .text{
+    display: flex;
+    pointer-events: none; 
+    align-self: center;
+  }
+  .sub_text{
+    pointer-events: none; 
+    margin-bottom: 1.5vh;
+  }
+  h3{
+    margin-top: 1vw; 
+    pointer-events: none; 
+  }
+  .btn{
+    margin-left: 30vw; 
+    margin-top: 40vh;
+    color: white;
+    border: white solid 0.2vw;
+    box-shadow: 0px 0px 3vw rgb(84, 194, 238);
+    background-color: black;
+    border-radius: 3vw;
+    padding: 5%;
+    font-size: 4vw;
+    cursor: pointer;
+    transition: all 0.5s;
+    text-shadow: 0px 0px 2vw rgb(0, 255, 255);
+    transition: all 0.3s;
+  }
+  .btn:active{
+    box-shadow: 0px 0px 3vw rgb(252, 252, 252);
+    transform: scale(0.9) translateY(2vh);
+    text-shadow: 0px 0px 2vw rgb(61, 61, 61);
+  }
+</style>
+</head> 
+<body>
+
+<div style="display: flex; flex-direction: column-reverse; padding: 0%; margin: 0%; height: 100vh; pointer-events: none; user-select: none; z-index: -1; position: absolute; justify-self: left; width: 100vw;">
+  <h6 style="align-self: flex-end; margin-right: 2%; opacity: 0.7;"> © Agrim Sharma (CosmicDev404) 2026</h6>
+  <h1 style="text-shadow: 0px 0px 2vw rgb(255, 0, 0); margin-bottom: 55vh; align-self: center; opacity: 0.6;">V3 Kinetic TX</h1>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 2fr; align-items: center; justify-items: center; height: 100vh; width:100vw; padding: 0;">
+
+  <div style="position: relative; width: 40vw; height: 75vh; display: flex; align-items: center; justify-content: center;"> 
+    <div style="position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 2;">
+    <div class="text" id='left-d' style="margin-bottom: 5vh; margin-top: -12vh;">wheel 1</div>
+    <div class="text" style="margin-bottom: 1vh; opacity: 0.5;">↑</div>
+    <div style="height: 75vh; width: 4vw;"></div>
+    <div class="text" style="margin-top: 1vh; opacity: 0.5;">↓</div>
+    <b class="text" id="leftMotorVal" style="margin-top: 5vh;  margin-bottom: -12vh;">0</b>
+  </div>
+    <input type="range" id="leftMotorSlider" style="position: absolute; z-index: 1; width: 5vw; --size:8vw; height: 90vh; writing-mode: vertical-lr; direction: rtl;" min="-4" max="4" value="0" step="1" oninput="updateSliderValue('leftMotorSlider', 'leftMotorVal')">
+    <button type="button" class="btn" onclick="resetall()"> Park </button>
+    <div style="position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;"> 
+      <div class="text" style="position: absolute; margin-left: 16vw;">Dual</div>
+      <div class="text" style="position: absolute; margin-left: 43vw;">Sync</div>
+    </div>
+    <input type="range" id="sync" style="position: absolute; margin-bottom: 8vh; height: 2vw; --size: 4vw; width: 8vw; margin-left: 30vw; margin-top: 8.5vh;" min="0" max="1" value="0" oninput="sync()">
+  </div>
+  
+  <div style="position: relative; width: 40vw; height: 75vh; display: flex; align-items: center; justify-content: center;">
+  
+    <div id="right-d" style="position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 2;">
+      <div class="text" style="margin-bottom: 5vh; margin-top:-12vh;">wheel 2</div>
+      <div class="text" style="margin-bottom: 1vh; opacity: 0.5;">↑</div>
+      <div style="height: 75vh; width: 4vw;"></div>
+      <div class="text" style="margin-top: 1vh; opacity: 0.5;">↓</div>
+      <b class="text" id="rightMotorVal" style="margin-top: 5vh; margin-bottom: -12vh;">0</b>
+    </div>
+  
+    <input type="range" id="rightMotorSlider" style="position: absolute; --size:7.5vw; width: 7.5vw; height: 90vh; writing-mode: vertical-lr; direction: rtl; z-index: 1;" min="-4" max="4" value="0" step="1" oninput="updateSliderValue('rightMotorSlider', 'rightMotorVal')">
+  
+    <div style="position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 2;">
+      <div class="text" id="servolab" style="width:100%; margin-left: -1vw; position: absolute; margin-top: -22vh;">servo</div>
+      <div class="text" style="position: absolute; margin-left: -33vw; opacity: 0.5;">←</div>
+      <div class="text" style="position: absolute; margin-left: 33vw; opacity: 0.5;">→</div>
+      <b class="text" id="servoVal" style="margin-right: -35vw; position: absolute; margin-top: 22vh;">100</b>
+    </div>
+  
+    <input style="position: absolute; height: 17.2vh; --size: 7.5vw; width: 40vw; z-index: 1;" type="range" id="servoSlider" min="55" max="145" value="100" oninput="updateSliderValue('servoSlider', 'servoVal')" onmouseup="resetServo()" ontouchend="resetServo()"> <!-- set servo centre and min/max values according to arrangement -->
+  
+  </div>
+</div>
+</body>
+</html>
+)rawliteral";
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) { //data extract from web controller
+  if (type == WStype_TEXT) {
+    int tempServo, tempLeft, tempRight;
+
+    if (sscanf((char*)payload, "%d,%d,%d", &tempServo, &tempLeft, &tempRight) == 3) {
+      lastPacket = millis();
+      if (tempServo != servo) { //give commands only when changed
+        servo = tempServo;
+        ser.write(150-servo); //change 150 with actual servo max
+      }
+      if (tempLeft != left) {
+        left = tempLeft;
+        m1(left);
+      }
+      if (tempRight != right) {
+        right = tempRight;
+        m2(right);
+      }
+      if (tempLeft == 0 && tempRight == 0 && tempServo == 100){cove(true);} else {cove(false);} //park indicator
+    }
+  }
+}
+
+void m1(int value){ //motor 1 controller
+  int speed = map(abs(value), 0, 4, 100, 255);
+  analogWrite(enA, speed);
+  if (value > 0){
+    digitalWrite(inB, LOW);
+    digitalWrite(inA, HIGH);
+  } else if (value < 0){
+    digitalWrite(inB, HIGH);
+    digitalWrite(inA, LOW);
+  } else{
+    digitalWrite(inA, LOW);
+    digitalWrite(inB, LOW);
+  }
+}
+
+void m2(int value){ //motor 2 controller
+  int speed = map(abs(value), 0, 4, 100, 255);
+  analogWrite(enB, speed);
+  if (value > 0){
+    digitalWrite(inD, LOW);
+    digitalWrite(inC, HIGH);
+  } else if (value < 0){
+    digitalWrite(inD, HIGH);
+    digitalWrite(inC, LOW);
+  } else{
+    digitalWrite(inC, LOW);
+    digitalWrite(inD, LOW);
+  }
+}
+
+void cove(bool input){ //simple inbuilt led controller function
+  if (input){
+    digitalWrite(lightCove, LOW);
+  } else{
+    digitalWrite(lightCove, HIGH);
+  }
+}
+
+void setup() {
+  Serial.end();
+  ser.attach(D5, 544, 2400); 
+
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+  pinMode(inA, OUTPUT);
+  pinMode(inB , OUTPUT);
+  pinMode(inC , OUTPUT);
+  pinMode(inD , OUTPUT);
+  pinMode(lightCove, OUTPUT);
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(AP_SSID, AP_PASSWORD);
+
+  server.on("/", HTTP_GET, []() {
+    server.send_P(200, "text/html", webpage);
+  });
+
+  server.begin();
+  analogWriteRange(255); //set range to familiar 0-255
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
+void loop() {
+  server.handleClient();
+  webSocket.loop();
+  if (millis()-lastPacket >= 250){ //connection lost -> park
+    ser.write(150-100); 
+    m1(0);
+    m2(0);
+    if (millis()-ltime >= 500){ //blinking for connection
+      cove(lstate);
+      lstate = !lstate;
+      ltime = millis();
+    }
+  }
+}
