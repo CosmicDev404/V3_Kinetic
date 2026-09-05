@@ -14,7 +14,7 @@ const int lightCove = D0; //status/ accessory light
 
 Servo ser;
 
-int servo = 100; //servo centre, change it to 90 or as per servo arrangement
+int servo = 45; //servo centre, change it as per servo arrangement
 int left = 0;
 int right = 0;
 bool lstate = 0;
@@ -38,7 +38,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       lastPacket = millis();
       if (tempServo != servo) { //give commands only when changed
         servo = tempServo;
-        ser.write(150-servo); //change 150 with actual servo max
+        ser.write(servo);
       }
       if (tempLeft != left) {
         left = tempLeft;
@@ -48,7 +48,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         right = tempRight;
         m2(right);
       }
-      if (tempLeft == 0 && tempRight == 0 && tempServo == 100){cove(true);} else {cove(false);} //park indicator
+      if (tempLeft == 0 && tempRight == 0 && tempServo == 45){cove(true);} else {cove(false);} //park indicator
     }
   }
 }
@@ -120,7 +120,7 @@ void loop() {
   server.handleClient();
   webSocket.loop();
   if (millis()-lastPacket >= 250){ //connection lost -> park
-    ser.write(150-100); 
+    ser.write(45); 
     m1(0);
     m2(0);
     if (millis()-ltime >= 500){ //blinking for connection
