@@ -57,11 +57,11 @@ void m1(int value){ //motor 1 controller
   int speed = map(abs(value), 0, 4, 100, 255);
   analogWrite(enA, speed);
   if (value > 0){
-    digitalWrite(inB, LOW);
-    digitalWrite(inA, HIGH);
-  } else if (value < 0){
     digitalWrite(inB, HIGH);
     digitalWrite(inA, LOW);
+  } else if (value < 0){
+    digitalWrite(inB, LOW);
+    digitalWrite(inA, HIGH);
   } else{
     digitalWrite(inA, LOW);
     digitalWrite(inB, LOW);
@@ -72,11 +72,11 @@ void m2(int value){ //motor 2 controller
   int speed = map(abs(value), 0, 4, 100, 255);
   analogWrite(enB, speed);
   if (value > 0){
-    digitalWrite(inD, LOW);
-    digitalWrite(inC, HIGH);
-  } else if (value < 0){
     digitalWrite(inD, HIGH);
     digitalWrite(inC, LOW);
+  } else if (value < 0){
+    digitalWrite(inD, LOW);
+    digitalWrite(inC, HIGH);
   } else{
     digitalWrite(inC, LOW);
     digitalWrite(inD, LOW);
