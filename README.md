@@ -15,10 +15,10 @@ A minimalist Wi-Fi RC trike controller built around an ESP8266, with independent
 ## Setup
 - Open the ```.ino``` file.
 - Find the comment marking the webpage section.
-- In the ```V3Kinetic.html```, replace ```100``` with the correct value wherever the servo center is defined.
+- In the ```V3Kinetic.html```, replace ```45``` with the correct value wherever the servo center is defined.
 - Paste the complete HTML controller code inside the ```PROGMEM``` webpage string at that location. 
-- Set the servo center to your actual mechanical center. Replace 100 with the correct value wherever the servo center is defined.
-- Set the servo limits to the actual safe range of your servo by replacing ```55–145``` with your measured minimum and maximum values.
+- Set the servo center to your actual mechanical center. Replace ```45``` with the correct value wherever the servo center is defined.
+- Set the servo limits to the actual safe range of your servo by replacing ```0–90``` with your measured minimum and maximum values.
 - Upload the .ino to the ESP8266.
 - Power the V3 Kinetic trike.
 - Connect your phone/computer to the Wi-Fi network: ```V3 Kinetic``` 
