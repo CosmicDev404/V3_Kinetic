@@ -6,7 +6,7 @@
 
 <script>
 let socket;
-let lastServo = "100"; /* set servo centre according to arrangement */
+let lastServo = "45"; /* set servo centre according to arrangement */
 let lastLeft = "0";
 let lastRight = "0";
 
@@ -57,8 +57,8 @@ function resetServo() {
   const servoDisplay = document.getElementById('servoVal');
 
   if (servoSlider && servoDisplay) {
-    servoSlider.value = 100; /*!change!*/
-    servoDisplay.innerText = 100; /*!change!*/
+    servoSlider.value = 45; /*!change!*/
+    servoDisplay.innerText = 45; /*!change!*/
   }
 }
 
@@ -70,8 +70,8 @@ function resetall() {
   const rightSlider = document.getElementById('rightMotorSlider');
   const rightDisplay = document.getElementById('rightMotorVal');
 
-  servoSlider.value = 100; /*!change!*/
-  servoDisplay.innerText = 100; /*!change!*/
+  servoSlider.value = 45; /*!change!*/
+  servoDisplay.innerText = 45; /*!change!*/
 
   leftSlider.value = 0;
   leftDisplay.innerText = 0;
@@ -287,10 +287,10 @@ setInterval(() => {
       <div class="text" id="servolab" style="width:100%; margin-left: -1vw; position: absolute; margin-top: -22vh;">servo</div>
       <div class="text" style="position: absolute; margin-left: -33vw; opacity: 0.5;">←</div>
       <div class="text" style="position: absolute; margin-left: 33vw; opacity: 0.5;">→</div>
-      <b class="text" id="servoVal" style="margin-right: -35vw; position: absolute; margin-top: 22vh;">100</b> <!-- !change! -->
+      <b class="text" id="servoVal" style="margin-right: -35vw; position: absolute; margin-top: 22vh;">45</b> <!-- !change! -->
     </div>
   
-    <input style="position: absolute; height: 17.2vh; --size: 7.5vw; width: 40vw; z-index: 1;" type="range" id="servoSlider" min="55" max="145" value="100" oninput="updateSliderValue('servoSlider', 'servoVal')" onmouseup="resetServo()" ontouchend="resetServo()"> <!-- set servo centre and min/max values according to arrangement -->
+    <input style="position: absolute; height: 17.2vh; --size: 7.5vw; width: 40vw; z-index: 1;" type="range" id="servoSlider" min="0" max="90" value="45" oninput="updateSliderValue('servoSlider', 'servoVal')" onmouseup="resetServo()" ontouchend="resetServo()"> <!-- set servo centre and min/max values according to arrangement -->
   
   </div>
 </div>
