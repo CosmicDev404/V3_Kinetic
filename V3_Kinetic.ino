@@ -48,7 +48,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         right = tempRight;
         m2(right);
       }
-      if (tempLeft == 0 && tempRight == 0 && tempServo == 45){cove(true);} else {cove(false);} //park indicator
+      if (tempLeft == 0 && tempRight == 0 && tempServo == 45){cove(true);} else {cove(false);} //neutral indicator
     }
   }
 }
