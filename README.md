@@ -45,8 +45,8 @@ Built around an ESP8266 NodeMCU, an L298N motor driver, two drive motors, and a 
 - <strong>Sync:</strong> Synchronizes both rear wheels to the Wheel control, turning the two-wheel controls into a single drive control.
 - <strong>Park:</strong> Returns the motors to zero and the servo to its center position.
 <p align=center>
-<img width="672" height="334" alt="Screenshot 2026-09-09 131742" src="https://github.com/user-attachments/assets/0c011481-a4f2-4198-9991-cb026ed656ae" /> <br> sync mode <br>
-<img width="672" height="337" alt="Screenshot 2026-09-09 131715" src="https://github.com/user-attachments/assets/832f043f-01c7-420e-873e-9033fb8b6412" />  <br> dual mode
+<img width="1350" height="603" alt="Screenshot 2026-09-13 160350" src="https://github.com/user-attachments/assets/14556115-2329-442b-9540-5f694a5fc228" /> <br> sync mode <br>
+<img width="1348" height="605" alt="Screenshot 2026-09-13 160319" src="https://github.com/user-attachments/assets/d6ad88f4-1255-4b07-a30f-d9ca5aecd1f8" />  <br> dual mode
 </p>
 
 
