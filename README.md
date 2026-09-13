@@ -38,12 +38,12 @@ The controller sends the current actuator values, while the ESP8266 watchdog sto
 Built around an ESP8266 NodeMCU, an L298N motor driver, two drive motors, and a servo-steered front wheel.
 
 ## Controller
-- <strong> Wheel 1:</strong> Controls the first rear motor.
+- <strong>Wheel 1:</strong> Controls the first rear motor.
 - <strong>Wheel 2:</strong> Controls the second rear motor.
 - <strong>Servo:</strong> Controls the front steering angle. Release it to automatically return to its center.
 - <strong>Dual:</strong> Both rear wheels can be controlled independently.
 - <strong>Sync:</strong> Synchronizes both rear wheels to the Wheel control, turning the two-wheel controls into a single drive control.
-- <strong>Park:</strong> Returns the motors to zero and the servo to its center position.
+- <strong>Neutral:</strong> Cuts power from the motors and returns the servo to its center position.
 <p align=center>
 <img width="1350" height="603" alt="Screenshot 2026-09-13 160350" src="https://github.com/user-attachments/assets/14556115-2329-442b-9540-5f694a5fc228" /> <br> sync mode <br>
 <img width="1348" height="605" alt="Screenshot 2026-09-13 160319" src="https://github.com/user-attachments/assets/d6ad88f4-1255-4b07-a30f-d9ca5aecd1f8" />  <br> dual mode
