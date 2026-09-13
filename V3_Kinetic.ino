@@ -54,33 +54,41 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 }
 
 void m1(int value){ //motor 1 controller
-  int speed = map(abs(value), 0, 4, 100, 255);
-  analogWrite(enA, speed);
-  if (value > 0){
+  int speed = map(abs(value), 1, 4, 100, 255);
+  if (value > 0 && value < 5){
     digitalWrite(inB, HIGH);
     digitalWrite(inA, LOW);
-  } else if (value < 0){
+  } else if (value < 0 && value > -5){//castor braking
     digitalWrite(inB, LOW);
     digitalWrite(inA, HIGH);
-  } else{
+  } else if (value == 0) {
+    speed = 0;
+  }
+   else{//hard stop
+    speed = 255;
     digitalWrite(inA, LOW);
     digitalWrite(inB, LOW);
   }
+  analogWrite(enA, speed);
 }
 
 void m2(int value){ //motor 2 controller
-  int speed = map(abs(value), 0, 4, 100, 255);
-  analogWrite(enB, speed);
-  if (value > 0){
+  int speed = map(abs(value), 1, 4, 100, 255);
+  if (value > 0 && value < 5){
     digitalWrite(inD, HIGH);
     digitalWrite(inC, LOW);
-  } else if (value < 0){
+  } else if (value < 0 && value > -5){
     digitalWrite(inD, LOW);
     digitalWrite(inC, HIGH);
-  } else{
+  } else if (value == 0){//castor braking
+    speed = 0;
+  }
+  else{//hard stop
+    speed = 255;
     digitalWrite(inC, LOW);
     digitalWrite(inD, LOW);
   }
+  analogWrite(enB, speed);
 }
 
 void cove(bool input){ //simple inbuilt led controller function
@@ -120,10 +128,10 @@ void loop() {
   server.handleClient();
   webSocket.loop();
   if (millis()-lastPacket >= 250){ //connection lost -> park
-    ser.write(45); 
-    m1(0);
-    m2(0);
-    if (millis()-ltime >= 500){ //blinking for connection
+    ser.write(50); 
+    m1(5); //triggers else case => both inputs low => safely parked car
+    m2(5);
+    if (millis()-ltime >= 250){ //blinking for connection
       cove(lstate);
       lstate = !lstate;
       ltime = millis();
