@@ -52,8 +52,8 @@ Built around an ESP8266 NodeMCU, an L298N motor driver, two drive motors, and a 
 ## AI Disclosure
 
 Large Language Models (LLMs) including ChatGPT and Gemini were used as productivity assistants during the development of this project.
-- Human Core: The entire physical circuitry, Arduino IDE firmware, HTML controller structure, complete custom CSS styling, and core debugging were architected and implemented by the developer.
-- AI Assistance: LLMs were utilized strictly to help scaffold the JavaScript boilerplate and initial WebSocket connection structure.
+- Human Core: The entire physical circuitry, Arduino IDE firmware, HTML controller structure, custom CSS styling, and core debugging were architected and implemented by the developer.
+- AI Assistance: LLMs were utilized strictly to help scaffold the JavaScript boilerplate and initial WebSocket connection structure, along with minor CSS boxing issues.
 - Developer Oversight: Advanced JavaScript layers—including the real-time UI controls and haptic feedback logic—were custom-written by hand. No automated suggestions were accepted blindly; all code was manually reviewed, verified, and integrated by the developer.
 
 
