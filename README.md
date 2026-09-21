@@ -15,9 +15,9 @@ A minimalist Wi-Fi RC trike controller built around an ESP8266, with independent
 ## Setup
 - Open the ```.ino``` file.
 - Find the comment marking the webpage section.
-- In the ```V3Kinetic.html```, replace ```45``` with the correct value wherever the servo center is defined.
+- In the ```V3Kinetic.html```, update ```servo_centre``` variable and servo slider logic according to arrangement.
 - Paste the complete HTML controller code inside the ```PROGMEM``` webpage string at that location. 
-- Set the servo center to your actual mechanical center. Replace ```45``` with the correct value wherever the servo center is defined.
+- Set the servo center to your actual mechanical center by updating ```servo_centre``` variable.
 - Set the servo limits to the actual safe range of your servo by replacing ```0–90``` with your measured minimum and maximum values.
 - Upload the .ino to the ESP8266.
 - Power the V3 Kinetic trike.
@@ -27,6 +27,30 @@ A minimalist Wi-Fi RC trike controller built around an ESP8266, with independent
 
 <i> The controller communicates with the ESP8266 using WebSockets on port 81. </i>
 
+### FPV Setup
+(optional)
+
+- Using [scrcpy](https://github.com/genymobile/scrcpy), any mobile phone can be mounted on V3 Kinetic acting as an FPV cam.
+- Open a terminal window in ```scrcpy``` folder on your PC.
+- Connect your phone via USB to the ```adb```.
+- Ensure both the PC and phone are on the same wi-fi/hotspot network.
+- Next, to switch to wifi connection, type ```adb tcpip 5555```, where 5555 can be any free ip port.
+- Now, enter the following command: ```adb connect {phoneip}:5555``` where ```{phoneip}``` is the actual ip address of the phone in the network.
+- Once adb is connected, following command can be used to access the camera sensor
+
+ ```scrcpy --video-source=camera --camera-id={cam} --camera-size={size} --camera-fps={fps} --camera-zoom={zoom} --no-audio --video-codec=h264```
+ 
+  where:
+  - ```{cam}``` is the camera id → 0 for back cam and 1 for front cam
+  - ```{size}``` is the stream resolution like 1280x720 or 640x480 (using small sizes can help reduce latency on a weak connection)
+  - ```{fps}``` is the fps setting of the stream, like 15, 24, 30, etc.
+  - ```{zoom}``` refers to camera zoom, typically 1-4
+  - additionally, ```--camera-torch``` can be added to turn on the flashlight
+
+ #### Architecture 
+
+ ``` Phone mounted on V3 Kinetic → Wi-Fi → adb connection → scrcpy camera access → Live video stream on the PC screen ```
+    
 ## Architecture
 
 ```Controller → Wi-Fi AP → WebSocket → ESP8266 → Servo + Motor Drivers```
@@ -56,4 +80,12 @@ Large Language Models (LLMs) including ChatGPT and Gemini were used as productiv
 - AI Assistance: LLMs were utilized strictly to help scaffold the JavaScript boilerplate and initial WebSocket connection structure, along with minor CSS boxing issues.
 - Developer Oversight: Advanced JavaScript layers—including the real-time UI controls and haptic feedback logic—were custom-written by hand. No automated suggestions were accepted blindly; all code was manually reviewed, verified, and integrated by the developer.
 
+## Third-Party Software
 
+This project uses [scrcpy](https://github.com/Genymobile/scrcpy)
+by Genymobile for Android device camera access.
+
+scrcpy is used as an external, unmodified tool and is not included
+or modified in this repository.
+
+Licensed under the Apache License 2.0.
