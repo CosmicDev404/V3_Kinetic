@@ -14,7 +14,8 @@ const int lightCove = D0; //status/ accessory light
 
 Servo ser;
 
-int servo = 45; //servo centre, change it as per servo arrangement
+int servo_centre = 45; //servo centre, change it as per servo arrangement
+int servo = servo_centre; 
 int left = 0;
 int right = 0;
 bool lstate = 0;
@@ -128,7 +129,7 @@ void loop() {
   server.handleClient();
   webSocket.loop();
   if (millis()-lastPacket >= 250){ //connection lost -> park
-    ser.write(50); 
+    ser.write(servo_centre); 
     m1(5); //triggers else case => both inputs low => safely parked car
     m2(5);
     if (millis()-ltime >= 250){ //blinking for connection
