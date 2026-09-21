@@ -6,7 +6,8 @@
 
 <script>
 let socket;
-let lastServo = "45"; /* set servo centre according to arrangement */
+let servo_centre = "45"; /* set servo centre according to arrangement */
+let lastServo = "45"; /*innit servo to its centre position */
 let lastLeft = "0";
 let lastRight = "0";
 
@@ -57,8 +58,8 @@ function resetServo() {
   const servoDisplay = document.getElementById('servoVal');
 
   if (servoSlider && servoDisplay) {
-    servoSlider.value = 45; /*!change!*/
-    servoDisplay.innerText = 45; /*!change!*/
+    servoSlider.value = servo_centre; 
+    servoDisplay.innerText = servo_centre;
   }
 }
 
@@ -70,8 +71,8 @@ function resetall() {
   const rightSlider = document.getElementById('rightMotorSlider');
   const rightDisplay = document.getElementById('rightMotorVal');
 
-  servoSlider.value = 45; /*!change!*/
-  servoDisplay.innerText = 45; /*!change!*/
+  servoSlider.value = servo_centre;
+  servoDisplay.innerText = servo_centre; /*!change!*/
 
   leftSlider.value = 0;
   leftDisplay.innerText = 0;
